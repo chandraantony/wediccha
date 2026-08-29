@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustrasi garis gereja</title>
+  <desc id="desc">Gereja dengan pintu melengkung, jendela, salib, dan tanaman.</desc>
+  <rect width="900" height="600" fill="#ebe8df"/>
+  <g fill="none" stroke="#526148" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 514h716" opacity=".45"/>
+    <path d="M205 514V270l245-158 245 158v244"/>
+    <path d="M169 291 450 105l281 186"/>
+    <path d="M450 105V50m-22 22h44"/>
+    <path d="M259 514V309h382v205" opacity=".55"/>
+    <path d="M358 514V384a92 92 0 0 1 184 0v130"/>
+    <path d="M386 514V388a64 64 0 0 1 128 0v126" opacity=".6"/>
+    <path d="M450 324v190" opacity=".45"/>
+    <circle cx="450" cy="240" r="43"/>
+    <path d="M450 197v86m-43-43h86" opacity=".55"/>
+    <path d="M278 345v-54a42 42 0 0 1 84 0v54H278Zm260 0v-54a42 42 0 0 1 84 0v54h-84Z"/>
+    <path d="M320 249v96m260-96v96" opacity=".4"/>
+    <path d="M160 514c21-18 31-44 28-78 28 19 40 45 35 78m-63-32c-18-20-25-44-20-72 25 20 38 44 38 72"/>
+    <path d="M740 514c-21-18-31-44-28-78-28 19-40 45-35 78m63-32c18-20 25-44 20-72-25 20-38 44-38 72"/>
+  </g>
+  <g fill="#a3b18a">
+    <circle cx="156" cy="433" r="7"/><circle cx="181" cy="415" r="6"/><circle cx="209" cy="448" r="8"/>
+    <circle cx="744" cy="433" r="7"/><circle cx="719" cy="415" r="6"/><circle cx="691" cy="448" r="8"/>
+  </g>
+  <path d="M110 127c55-38 110-42 166-13M790 127c-55-38-110-42-166-13" fill="none" stroke="#a3b18a" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+</svg>

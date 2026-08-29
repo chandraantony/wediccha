@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustrasi garis resepsi</title>
+  <desc id="desc">Meja resepsi dengan bunga, lilin, kursi, dan rangkaian lampu.</desc>
+  <rect width="900" height="600" fill="#17201f"/>
+  <g fill="none" stroke="#d8dfcf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M72 121c186 72 383 72 756 0M54 208c255 57 519 57 792 0" opacity=".55"/>
+    <path d="M150 444h600l-52-144H202l-52 144Z"/>
+    <path d="M181 444 142 548m577-104 39 104M242 444l-18 104m434-104 18 104"/>
+    <path d="M240 300v-58m-14 0h28m406 58v-58m-14 0h28"/>
+    <path d="M407 300c7-57 79-57 86 0"/>
+    <path d="M450 300v-79m0 19-34-28m34 47 37-34m-37-5-11-31m11 31 15-35"/>
+    <path d="M394 365c33 16 79 16 112 0M284 365h64m204 0h64" opacity=".6"/>
+    <ellipse cx="316" cy="392" rx="54" ry="17"/>
+    <ellipse cx="584" cy="392" rx="54" ry="17"/>
+    <path d="M312 300c0 28 12 42 26 42s26-14 26-42m-52 0h52m224 0c0 28 12 42 26 42s26-14 26-42m-52 0h52" opacity=".7"/>
+    <path d="M106 548v-93h82v93m524 0v-93h82v93M89 477h116m490 0h116" opacity=".65"/>
+  </g>
+  <g fill="#e6c982">
+    <circle cx="142" cy="142" r="7"/><circle cx="280" cy="174" r="7"/><circle cx="434" cy="185" r="7"/>
+    <circle cx="594" cy="171" r="7"/><circle cx="748" cy="142" r="7"/>
+    <circle cx="192" cy="224" r="6"/><circle cx="354" cy="242" r="6"/><circle cx="520" cy="242" r="6"/><circle cx="690" cy="224" r="6"/>
+    <path d="M232 274h16v26h-16zm420 0h16v26h-16z"/>
+  </g>
+  <g fill="#a3b18a">
+    <circle cx="419" cy="230" r="10"/><circle cx="439" cy="212" r="9"/><circle cx="462" cy="226" r="11"/><circle cx="483" cy="210" r="8"/>
+  </g>
+</svg>
