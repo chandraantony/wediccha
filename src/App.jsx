@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import bridePortrait from './bridesgrooms/brides.jpeg'
 import groomPortrait from './bridesgrooms/grooms-web.jpg'
@@ -908,12 +908,60 @@ function Cover({ onOpen, guestName }) {
   )
 }
 
+function MusicControl({ isPlaying, onToggle }) {
+  return (
+    <motion.button
+      type="button"
+      className="fixed right-5 bottom-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-[#111517]/80 text-lg text-white shadow-lg backdrop-blur-md transition-colors hover:bg-[#111517] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-6 sm:bottom-6"
+      onClick={onToggle}
+      aria-label={isPlaying ? 'Pause background music' : 'Play background music'}
+      title={isPlaying ? 'Pause music' : 'Play music'}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileTap={{ scale: 0.92 }}
+    >
+      <span aria-hidden="true">{isPlaying ? 'Ⅱ' : '♪'}</span>
+    </motion.button>
+  )
+}
+
 function App() {
   const [opened, setOpened] = useState(false)
+  const [musicPlaying, setMusicPlaying] = useState(false)
+  const [musicAvailable, setMusicAvailable] = useState(true)
+  const audioRef = useRef(null)
   const guestName = (() => {
     const params = new URLSearchParams(window.location.search)
     return (params.get('guest') || params.get('to') || '').trim().slice(0, 100)
   })()
+
+  const playMusic = async () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    try {
+      audio.volume = 0.45
+      await audio.play()
+    } catch {
+      setMusicPlaying(false)
+    }
+  }
+
+  const openInvitation = () => {
+    setOpened(true)
+    playMusic()
+  }
+
+  const toggleMusic = () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (audio.paused) {
+      playMusic()
+    } else {
+      audio.pause()
+    }
+  }
 
   useEffect(() => {
     document.documentElement.style.overflow = opened ? '' : 'hidden'
@@ -927,11 +975,25 @@ function App() {
 
   return (
     <main className="min-w-80 overflow-x-hidden bg-[#f8f7f2] font-['Tenor_Sans',sans-serif] text-[#111517]">
+      <audio
+        ref={audioRef}
+        loop
+        preload="metadata"
+        onPlay={() => setMusicPlaying(true)}
+        onPause={() => setMusicPlaying(false)}
+        onError={() => setMusicAvailable(false)}
+      >
+        <source src="/music/everlasting-love-jesse-barrera.mp3" type="audio/mpeg" />
+      </audio>
+
       <AnimatePresence>
-        {!opened && <Cover onOpen={() => setOpened(true)} guestName={guestName} />}
+        {!opened && <Cover onOpen={openInvitation} guestName={guestName} />}
       </AnimatePresence>
 
       {opened && <SectionNav />}
+      {opened && musicAvailable && (
+        <MusicControl isPlaying={musicPlaying} onToggle={toggleMusic} />
+      )}
       {opened && (
         <>
           <ProfileSection
