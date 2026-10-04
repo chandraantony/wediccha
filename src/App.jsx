@@ -83,10 +83,11 @@ function Countdown() {
 const SECTIONS = [
   { id: 'groom', label: 'Mempelai Pria' },
   { id: 'bride', label: 'Mempelai Wanita' },
-  { id: 'love-stories', label: 'Love Stories' },
-  { id: 'gallery', label: 'Galeri' },
   { id: 'venue', label: 'Pemberkatan & Resepsi' },
   { id: 'countdown', label: 'Catat Tanggalnya' },
+  { id: 'wedding-gift', label: 'Wedding Gift' },
+  { id: 'love-stories', label: 'Love Stories' },
+  { id: 'gallery', label: 'Galeri' },
 ]
 
 function SectionNav() {
@@ -379,6 +380,24 @@ const GALLERY_IMAGES = Object.entries(galleryModules)
 
 function GallerySection() {
   const images = GALLERY_IMAGES
+  const [previewImage, setPreviewImage] = useState(null)
+
+  useEffect(() => {
+    if (!previewImage) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setPreviewImage(null)
+    }
+
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', closeOnEscape)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [previewImage])
 
   return (
     <section
@@ -403,9 +422,10 @@ function GallerySection() {
 
       <div className="mx-auto mt-10 w-[min(64rem,100%)] columns-2 gap-3 sm:gap-4 lg:mt-14 lg:columns-3">
         {images.map(({ src, alt }, index) => (
-          <motion.div
+          <motion.button
+            type="button"
             key={src}
-            className="mb-3 break-inside-avoid overflow-hidden sm:mb-4"
+            className="mb-3 block w-full cursor-zoom-in break-inside-avoid overflow-hidden sm:mb-4"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.15 }}
@@ -414,6 +434,8 @@ function GallerySection() {
               delay: (index % 3) * 0.12,
               ease: [0.22, 1, 0.36, 1],
             }}
+            onClick={() => setPreviewImage({ src, alt })}
+            aria-label={`Perbesar ${alt}`}
           >
             <img
               className="h-auto w-full bg-[#f8f7f2]/5 transition-transform duration-700 hover:scale-[1.03]"
@@ -421,9 +443,44 @@ function GallerySection() {
               alt={alt}
               loading="lazy"
             />
-          </motion.div>
+          </motion.button>
         ))}
       </div>
+
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            className="fixed inset-0 z-60 flex cursor-zoom-out items-center justify-center bg-[#07090a]/95 p-4 backdrop-blur-sm sm:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pratinjau foto galeri"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={() => setPreviewImage(null)}
+          >
+            <motion.img
+              className="max-h-[90svh] max-w-full cursor-default object-contain shadow-[0_2rem_6rem_rgba(0,0,0,0.45)]"
+              src={previewImage.src}
+              alt={previewImage.alt}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(event) => event.stopPropagation()}
+            />
+            <button
+              type="button"
+              className="absolute top-4 right-4 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-black/25 text-2xl leading-none text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-[#111517] sm:top-6 sm:right-6"
+              onClick={() => setPreviewImage(null)}
+              aria-label="Tutup pratinjau foto"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
@@ -432,9 +489,9 @@ const EVENTS = [
   {
     number: '01',
     title: 'Pemberkatan',
-    time: 'Waktu akan diumumkan',
-    venue: 'Nama Gereja / Lokasi Pemberkatan',
-    address: 'Alamat lengkap akan ditambahkan',
+    time: '09.00 s.d. 11.00 WIB' ,
+    venue: 'Gereja Katholik Santo Pio Bandar Hinalang',
+    address: 'Saribudolok',
     image: '/events/church-line.svg',
     imageAlt: 'Ilustrasi garis gereja untuk pemberkatan pernikahan',
     animation: 'light',
@@ -442,9 +499,9 @@ const EVENTS = [
   {
     number: '02',
     title: 'Resepsi',
-    time: 'Waktu akan diumumkan',
-    venue: 'Nama Gedung / Lokasi Resepsi',
-    address: 'Alamat lengkap akan ditambahkan',
+    time: '11.00 WIB s.d. selesai' ,
+    venue: 'Gedung Serbaguna Sapanriah Saribudolok.',
+    address: 'Saribudolok',
     image: '/events/reception-line.svg',
     imageAlt: 'Ilustrasi garis meja resepsi dengan lampu dan lilin',
     animation: 'sparkle',
@@ -566,7 +623,179 @@ function EventSection() {
   )
 }
 
-function Cover({ onOpen }) {
+const BANK_ACCOUNTS = [
+  {
+    bank: 'BCA',
+    number: '6460436310',
+    displayNumber: 'Ice Maria Saragih',
+    logo: '/banks/bca.svg',
+    logoAlt: 'Logo BCA',
+  },
+  {
+    bank: 'Mandiri',
+    number: '1310016499875',
+    displayNumber: 'Chandra Antonius Pur',
+    logo: '/banks/mandiri.svg',
+    logoAlt: 'Logo Bank Mandiri',
+  },
+]
+
+function WeddingGiftSection() {
+  const [copiedBank, setCopiedBank] = useState(null)
+
+  const copyAccountNumber = async ({ bank, number }) => {
+    try {
+      await navigator.clipboard.writeText(number)
+    } catch {
+      const textArea = document.createElement('textarea')
+      textArea.value = number
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    }
+
+    setCopiedBank(bank)
+    window.setTimeout(() => {
+      setCopiedBank((currentBank) => (currentBank === bank ? null : currentBank))
+    }, 2200)
+  }
+
+  return (
+    <section
+      className="relative flex min-h-svh snap-start items-center overflow-hidden bg-[#111517] px-5 py-20 text-[#f8f7f2] sm:px-8 lg:px-12 lg:py-28"
+      id="wedding-gift"
+      aria-labelledby="wedding-gift-title"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.08]"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 18% 20%, #d5e0c7 0, transparent 26%), radial-gradient(circle at 82% 78%, #d5e0c7 0, transparent 24%)',
+        }}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-5xl">
+        <motion.div className="mx-auto max-w-2xl text-center" {...reveal}>
+          <p className="m-0 text-[0.62rem] font-bold tracking-[0.3em] text-[#a3b18a] uppercase lg:text-[0.68rem]">
+            Tanda Kasih
+          </p>
+          <h2
+            className="mt-4 font-['Tenor_Sans',sans-serif] text-[clamp(2.6rem,12vw,4.75rem)] leading-none font-normal tracking-[0.02em]"
+            id="wedding-gift-title"
+          >
+            Wedding Gift
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-sm leading-7 text-[#f8f7f2]/65 sm:text-base sm:leading-8">
+            Doa restu Anda merupakan hadiah terindah bagi kami. Namun, apabila Anda ingin
+            memberikan tanda kasih, dapat dikirimkan melalui rekening berikut.
+          </p>
+        </motion.div>
+
+        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5">
+          {BANK_ACCOUNTS.map((account, index) => {
+            const isCopied = copiedBank === account.bank
+
+            return (
+              <motion.article
+                className="relative overflow-hidden border border-white/15 bg-white/[0.055] p-7 backdrop-blur-sm sm:p-8"
+                key={account.bank}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{
+                  duration: 0.75,
+                  delay: index * 0.12,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <div className="flex items-start justify-between gap-5">
+                  <div>
+                    <p className="text-[0.58rem] font-bold tracking-[0.26em] text-[#a3b18a] uppercase">
+                      Bank Transfer
+                    </p>
+                    <h3 className="mt-2 font-['Tenor_Sans',sans-serif] text-2xl font-normal tracking-[0.04em] sm:text-3xl">
+                      {account.bank}
+                    </h3>
+                  </div>
+                  <span className="flex h-12 w-24 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white px-3 shadow-[0_0.6rem_1.5rem_rgba(0,0,0,0.14)]">
+                    <img
+                      className="h-auto max-h-7 w-full object-contain"
+                      src={account.logo}
+                      alt={account.logoAlt}
+                      loading="lazy"
+                    />
+                  </span>
+                </div>
+
+                <div className="mt-10 border-t border-white/12 pt-7">
+                  <p className="text-[0.58rem] font-bold tracking-[0.22em] text-white/45 uppercase">
+                    Atas Nama
+                  </p>
+                  <p className="mt-3 text-[clamp(1.45rem,7vw,2rem)] leading-none tracking-[0.08em] tabular-nums">
+                    {account.displayNumber}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className={`mt-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border px-5 py-3.5 text-[0.62rem] font-bold tracking-[0.2em] uppercase transition-colors duration-300 ${
+                    isCopied
+                      ? 'border-[#d5e0c7] bg-[#d5e0c7] text-[#111517]'
+                      : 'border-white/25 text-white hover:border-white hover:bg-white hover:text-[#111517]'
+                  }`}
+                  onClick={() => copyAccountNumber(account)}
+                  aria-label={`Salin nomor rekening ${account.bank}`}
+                >
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    aria-hidden="true"
+                  >
+                    {isCopied ? (
+                      <path d="m5 12 4 4L19 6" strokeLinecap="round" strokeLinejoin="round" />
+                    ) : (
+                      <>
+                        <rect x="8" y="8" width="11" height="11" rx="2" />
+                        <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                      </>
+                    )}
+                  </svg>
+                  {isCopied ? 'Berhasil Disalin' : 'Salin Nomor Rekening'}
+                </button>
+              </motion.article>
+            )
+          })}
+        </div>
+
+        <motion.div className="mx-auto mt-14 max-w-2xl text-center sm:mt-18" {...reveal}>
+          <p className="font-['Snell_Roundhand','Segoe_Script','Brush_Script_MT',cursive] text-[clamp(2.15rem,10vw,3.5rem)] leading-none text-[#d5e0c7]">
+            Thank you
+          </p>
+          <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-white/60 sm:text-base">
+            Terima kasih atas doa, restu, dan kasih yang Anda berikan untuk perjalanan baru
+            kami.
+          </p>
+          <p className="mt-7 text-[0.62rem] font-bold tracking-[0.28em] text-[#a3b18a] uppercase">
+            Ice &amp; Chandra
+          </p>
+        </motion.div>
+
+        <p className="sr-only" aria-live="polite">
+          {copiedBank ? `Nomor rekening ${copiedBank} berhasil disalin.` : ''}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function Cover({ onOpen, guestName }) {
   return (
     <motion.section
       className="fixed inset-0 isolate z-30 overflow-hidden bg-[#b5d9e5]"
@@ -653,6 +882,16 @@ function Cover({ onOpen }) {
             },
           }}
         >
+          {guestName && (
+            <div className="mb-5 max-w-sm rounded-r-lg border-l border-[#111517]/45 bg-[#f8f7f2]/75 px-4 py-3 text-left shadow-sm backdrop-blur-sm">
+              <p className="text-[0.58rem] font-bold tracking-[0.22em] text-[#111517]/65 uppercase">
+                Kepada Yth. Bapak/Ibu/Saudara/i
+              </p>
+              <p className="mt-1.5 font-['Tenor_Sans',sans-serif] text-xl leading-snug sm:text-2xl">
+                {guestName}
+              </p>
+            </div>
+          )}
           <button
             type="button"
             className="group inline-flex cursor-pointer items-center gap-3 rounded-full border border-[#111517] bg-[#111517] px-7 py-3.5 text-[0.68rem] font-bold tracking-[0.22em] text-[#f8f7f2] uppercase transition-colors duration-300 hover:bg-transparent hover:text-[#111517]"
@@ -671,6 +910,10 @@ function Cover({ onOpen }) {
 
 function App() {
   const [opened, setOpened] = useState(false)
+  const guestName = (() => {
+    const params = new URLSearchParams(window.location.search)
+    return (params.get('guest') || params.get('to') || '').trim().slice(0, 100)
+  })()
 
   useEffect(() => {
     document.documentElement.style.overflow = opened ? '' : 'hidden'
@@ -685,7 +928,7 @@ function App() {
   return (
     <main className="min-w-80 overflow-x-hidden bg-[#f8f7f2] font-['Tenor_Sans',sans-serif] text-[#111517]">
       <AnimatePresence>
-        {!opened && <Cover onOpen={() => setOpened(true)} />}
+        {!opened && <Cover onOpen={() => setOpened(true)} guestName={guestName} />}
       </AnimatePresence>
 
       {opened && <SectionNav />}
@@ -710,10 +953,6 @@ function App() {
             photoSrc={bridePortrait}
             photoAlt="Potret Ice, mempelai wanita"
           />
-
-          <LoveStoriesSection />
-
-          <GallerySection />
 
           <EventSection />
 
@@ -757,6 +996,12 @@ function App() {
               </p>
             </motion.div>
           </section>
+
+          <WeddingGiftSection />
+
+          <LoveStoriesSection />
+
+          <GallerySection />
         </>
       )}
     </main>
