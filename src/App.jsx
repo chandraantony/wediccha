@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import bridePortrait from './bridesgrooms/brides.jpeg'
 import groomPortrait from './bridesgrooms/grooms-web.jpg'
+import RsvpSection from './components/RsvpSection.jsx'
+import WishesSection from './components/WishesSection.jsx'
+import LoveStoryMarquee from './components/LoveStoryMarquee.jsx'
+import useGuestResponses from './hooks/useGuestResponses.js'
 
 const WEDDING_DATE = new Date('2026-10-24T00:00:00+07:00')
 
@@ -88,6 +92,8 @@ const SECTIONS = [
   { id: 'wedding-gift', label: 'Wedding Gift' },
   { id: 'love-stories', label: 'Love Stories' },
   { id: 'gallery', label: 'Galeri' },
+  { id: 'rsvp', label: 'Konfirmasi Kehadiran' },
+  { id: 'wishes', label: 'Doa dan Ucapan' },
 ]
 
 function SectionNav() {
@@ -145,7 +151,7 @@ function SectionNav() {
               if (definition.y === '0%') {
                 document
                   .getElementById(pending)
-                  ?.scrollIntoView({ behavior: 'auto' })
+                  ?.scrollIntoView({ behavior: 'instant' })
                 window.setTimeout(() => setPending(null), 120)
               }
             }}
@@ -153,7 +159,7 @@ function SectionNav() {
         )}
       </AnimatePresence>
       <nav
-        className="fixed top-1/2 right-4 z-50 flex -translate-y-1/2 flex-col gap-4 mix-blend-difference sm:right-6"
+        className="fixed top-1/2 right-4 z-50 flex -translate-y-1/2 flex-col gap-3 mix-blend-difference sm:right-6 sm:gap-4"
         aria-label="Navigasi bagian"
       >
         {SECTIONS.map(({ id, label }) => (
@@ -171,7 +177,7 @@ function SectionNav() {
                 : 'h-1.5 w-1.5 bg-white/30 group-hover:bg-white/60'
             }`}
           />
-          <span className="pointer-events-none absolute right-6 origin-right scale-95 rounded-full bg-white px-3 py-1 text-[0.58rem] font-bold tracking-[0.14em] whitespace-nowrap text-black uppercase opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
+          <span className="pointer-events-none absolute right-6 hidden origin-right scale-95 rounded-full bg-white px-3 py-1 text-[0.58rem] font-bold tracking-[0.14em] whitespace-nowrap text-black uppercase opacity-0 transition-all duration-300 sm:block sm:group-hover:scale-100 sm:group-hover:opacity-100 sm:group-focus-visible:scale-100 sm:group-focus-visible:opacity-100">
             {label}
           </span>
         </button>
@@ -267,53 +273,77 @@ const LOVE_STORIES = [
   {
     number: '01',
     title: 'Awal Pertemuan',
-    content: (
-      <>
-        Tak ada yang benar-benar kebetulan. Kisah kami bermula di Bandung pada{' '}
-        <em>27 September 2021</em>, tepat di hari wisuda. Saat itu, kami diperkenalkan.
-        Pertemuan singkat tersebut menjadi awal dari sebuah cerita yang indah, meski kami
-        belum menyadari bahwa takdir sedang mempertemukan dua hati.
-      </>
-    ),
+    lines: [
+      'Tak ada yang benar-benar kebetulan.',
+      'Kisah kami bermula di Bandung pada',
+      <><em>27 September 2021</em>, tepat di hari wisuda.</>,
+      'Saat itu, kami diperkenalkan.',
+      'Pertemuan singkat tersebut menjadi awal',
+      'dari sebuah cerita yang indah,',
+      'meski kami belum menyadari',
+      'bahwa takdir sedang mempertemukan dua hati.',
+    ],
   },
   {
     number: '02',
     title: 'Menjalin Kedekatan',
-    content: (
-      <>
-        Setahun setelah pertemuan itu, kami mulai saling berkomunikasi. Awalnya hanya saling
-        bertanya kabar dan berbagi cerita sederhana. Seiring berjalannya waktu, percakapan
-        kami menjadi semakin hangat dan intens. Dari hari ke hari, kami semakin mengenal satu
-        sama lain dan menemukan kenyamanan dalam setiap kebersamaan.
-      </>
-    ),
+    lines: [
+      'Setahun setelah pertemuan itu,',
+      'kami mulai saling berkomunikasi.',
+      'Awalnya hanya saling bertanya kabar',
+      'dan berbagi cerita sederhana.',
+      'Seiring berjalannya waktu,',
+      'percakapan kami menjadi semakin hangat dan intens.',
+      'Dari hari ke hari, kami semakin mengenal satu sama lain',
+      'dan menemukan kenyamanan dalam setiap kebersamaan.',
+    ],
   },
   {
     number: '03',
     title: 'Menjadi Sepasang Kekasih',
-    content: (
-      <>
-        Pada <em>7 Juli 2023</em>, kami memutuskan untuk melangkah lebih jauh dengan menjalin
-        hubungan sebagai sepasang kekasih. Selama hampir tiga tahun bersama, kami belajar
-        untuk saling memahami, saling menguatkan, dan bertumbuh bersama dalam suka maupun
-        duka.
-      </>
-    ),
+    lines: [
+      <>Pada <em>7 Juli 2023</em>, kami memutuskan</>,
+      'untuk melangkah lebih jauh',
+      'dengan menjalin hubungan sebagai sepasang kekasih.',
+      'Selama hampir tiga tahun bersama,',
+      'kami belajar untuk saling memahami,',
+      'saling menguatkan, dan bertumbuh bersama',
+      'dalam suka maupun duka.',
+    ],
   },
   {
     number: '04',
     title: 'Menuju Hari Bahagia',
-    content: (
-      <>
-        Perjalanan kami telah dipenuhi dengan cerita, tawa, dan pelajaran berharga. Dengan
-        penuh rasa syukur, kami memutuskan untuk melangkah ke babak baru dalam kehidupan,
-        mengikat janji suci pernikahan sebagai awal perjalanan seumur hidup. Semoga cinta
-        yang telah tumbuh sejak pertemuan pertama ini senantiasa menjadi rumah yang penuh
-        kebahagiaan, keberkahan, dan kasih sayang.
-      </>
-    ),
+    lines: [
+      'Perjalanan kami telah dipenuhi',
+      'dengan cerita, tawa, dan pelajaran berharga.',
+      'Dengan penuh rasa syukur,',
+      'kami memutuskan untuk melangkah',
+      'ke babak baru dalam kehidupan,',
+      'mengikat janji suci pernikahan',
+      'sebagai awal perjalanan seumur hidup.',
+      'Semoga cinta yang telah tumbuh sejak pertemuan pertama ini',
+      'senantiasa menjadi rumah yang penuh',
+      'kebahagiaan, keberkahan, dan kasih sayang.',
+    ],
   },
 ]
+
+const loveStoryPhotoModules = import.meta.glob('./assets/love-story/love-story-*.jpg', {
+  eager: true,
+  import: 'default',
+})
+
+const LOVE_STORY_PHOTOS = Object.entries(loveStoryPhotoModules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([path, src]) => {
+    const number = path.match(/love-story-(\d+)/)?.[1]
+    return {
+      src,
+      wide: number === '04' || number === '09',
+      position: number === '12' ? '40% 70%' : 'center 55%',
+    }
+  })
 
 function LoveStoriesSection() {
   return (
@@ -322,9 +352,29 @@ function LoveStoriesSection() {
       id="love-stories"
       aria-labelledby="love-stories-title"
     >
-      <div className="mx-auto w-full max-w-5xl">
+      <div
+        className="pointer-events-none absolute -inset-3 grid grid-flow-dense grid-cols-3 grid-rows-5 gap-1.5 blur-[1.5px] lg:grid-cols-5 lg:grid-rows-3"
+        aria-hidden="true"
+      >
+        {LOVE_STORY_PHOTOS.map((photo) => (
+          <img
+            key={photo.src}
+            className={`h-full min-h-0 w-full min-w-0 object-cover ${photo.wide ? 'col-span-2' : ''}`}
+            src={photo.src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={{ objectPosition: photo.position }}
+          />
+        ))}
+      </div>
+      <div
+        className="pointer-events-none absolute inset-0 bg-[#f0eee7]/70"
+        aria-hidden="true"
+      />
+      <div className="relative z-10 mx-auto w-full max-w-3xl text-center lg:max-w-6xl">
         <motion.div className="mx-auto max-w-2xl text-center" {...reveal}>
-          <p className="m-0 text-[0.62rem] font-bold tracking-[0.3em] text-[#647449] uppercase lg:text-[0.68rem]">
+          <p className="m-0 text-[0.62rem] font-bold tracking-[0.3em] text-[#344027] uppercase lg:text-[0.68rem]">
             Perjalanan Kami
           </p>
           <h2
@@ -333,15 +383,15 @@ function LoveStoriesSection() {
           >
             Love Stories
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-[#111517]/65 sm:text-base">
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-[#111517]/80 sm:text-base">
             Empat babak yang membawa kami menuju satu janji seumur hidup.
           </p>
         </motion.div>
 
-        <div className="mt-14 border-t border-[#111517]/15 sm:mt-18">
+        <div className="mx-auto mt-14 max-w-2xl space-y-14 sm:mt-18 sm:space-y-18 lg:max-w-5xl">
           {LOVE_STORIES.map((story, index) => (
             <motion.article
-              className="grid gap-4 border-b border-[#111517]/15 py-9 sm:grid-cols-[3rem_1fr] sm:gap-7 sm:py-11 lg:grid-cols-[4rem_15rem_1fr] lg:gap-9"
+              className="flex flex-col items-center gap-4 text-center"
               key={story.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -352,18 +402,29 @@ function LoveStoriesSection() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <span className="text-[0.62rem] font-bold tracking-[0.2em] text-[#647449]">
+              <span className="text-[0.62rem] font-bold tracking-[0.2em] text-[#344027]">
                 {story.number}
               </span>
-              <h3 className="font-['Tenor_Sans',sans-serif] text-2xl leading-tight font-normal tracking-[0.01em] sm:col-start-2 lg:col-start-auto lg:text-3xl">
+              <h3 className="max-w-xl font-['Tenor_Sans',sans-serif] text-2xl leading-tight font-normal tracking-[0.01em] sm:text-3xl lg:max-w-3xl">
                 {story.title}
               </h3>
-              <p className="max-w-2xl text-sm leading-7 text-[#111517]/68 sm:col-start-2 sm:text-base sm:leading-8 lg:col-start-auto">
-                {story.content}
+              <p className="mt-2 w-full max-w-2xl text-sm leading-7 text-balance text-[#111517]/82 sm:text-base sm:leading-8 lg:max-w-4xl">
+                {story.lines.map((line, lineIndex) => (
+                  <span className="block text-balance lg:inline" key={lineIndex}>
+                    {line}
+                    {lineIndex < story.lines.length - 1 && ' '}
+                    {lineIndex % 2 === 1 && lineIndex < story.lines.length - 1 && (
+                      <br className="hidden lg:inline" />
+                    )}
+                  </span>
+                ))}
               </p>
             </motion.article>
           ))}
         </div>
+      </div>
+      <div className="relative z-10 -mx-5 mt-14 sm:-mx-8 sm:mt-18 lg:-mx-12" id="love-story-photos">
+        <LoveStoryMarquee photos={LOVE_STORY_PHOTOS} />
       </div>
     </section>
   )
@@ -376,7 +437,16 @@ const galleryModules = import.meta.glob('./assets/gallery-*.jpeg', {
 
 const GALLERY_IMAGES = Object.entries(galleryModules)
   .sort(([a], [b]) => a.localeCompare(b))
-  .map(([path, src]) => ({ src, alt: `Ice dan Chandra — foto galeri ${path.match(/gallery-(\d+)/)?.[1] ?? ''}` }))
+  .map(([path, src]) => {
+    const number = path.match(/gallery-(\d+)/)?.[1] ?? ''
+    const landscape = number === '04' || number === '13'
+    return {
+      src,
+      alt: `Ice dan Chandra — foto galeri ${number}`,
+      width: landscape ? 4160 : 2778,
+      height: landscape ? 2778 : 4160,
+    }
+  })
 
 function GallerySection() {
   const images = GALLERY_IMAGES
@@ -421,7 +491,7 @@ function GallerySection() {
       </motion.div>
 
       <div className="mx-auto mt-10 w-[min(64rem,100%)] columns-2 gap-3 sm:gap-4 lg:mt-14 lg:columns-3">
-        {images.map(({ src, alt }, index) => (
+        {images.map(({ src, alt, width, height }, index) => (
           <motion.button
             type="button"
             key={src}
@@ -441,6 +511,8 @@ function GallerySection() {
               className="h-auto w-full bg-[#f8f7f2]/5 transition-transform duration-700 hover:scale-[1.03]"
               src={src}
               alt={alt}
+              width={width}
+              height={height}
               loading="lazy"
             />
           </motion.button>
@@ -490,8 +562,9 @@ const EVENTS = [
     number: '01',
     title: 'Pemberkatan',
     time: '09.00 s.d. 11.00 WIB' ,
-    venue: 'Gereja Katholik Santo Pio Bandar Hinalang',
+    venue: 'Gereja Katholik Santo Pio Purba Hinalang',
     address: 'Saribudolok',
+    mapsUrl: 'https://www.google.com/maps?q=WJ8V+3V8+Gereja+Katolik+Stasi+Santo+Pio,+Purba+Hinalang,+Purba+Sipinggan,+Kec.+Purba,+Kabupaten+Simalungun,+Sumatera+Utara+21165&ftid=0x3031afef41110107:0x3ff36f6016b0bca9&entry=gps&shh=CAE&lucs=,94297699,94231188,94280568,100821555,47071704,94218641,94282134,100835694,94286869,100820247,100822504,100838877,121816461&g_ep=CAISEjI2LjQwLjMuOTg5Mjk1MzUwMBgAINeCAyp7LDk0Mjk3Njk5LDk0MjMxMTg4LDk0MjgwNTY4LDEwMDgyMTU1NSw0NzA3MTcwNCw5NDIxODY0MSw5NDI4MjEzNCwxMDA4MzU2OTQsOTQyODY4NjksMTAwODIwMjQ3LDEwMDgyMjUwNCwxMDA4Mzg4NzcsMTIxODE2NDYxQgJJRA%3D%3D&skid=24be491e-43da-441e-8b0c-0949af5adc41&g_st=iw',
     image: '/events/church-line.svg',
     imageAlt: 'Ilustrasi garis gereja untuk pemberkatan pernikahan',
     animation: 'light',
@@ -502,6 +575,7 @@ const EVENTS = [
     time: '11.00 WIB s.d. selesai' ,
     venue: 'Gedung Serbaguna Sapanriah Saribudolok.',
     address: 'Saribudolok',
+    mapsUrl: 'https://www.google.com/maps/place/Gedung+Serba+Guna+SARIBUDOLOK/@2.9415837,98.611163,17z/data=!3m1!4b1!4m6!3m5!1s0x3031af0030883e3d:0x23566f5bead4d0a0!8m2!3d2.9415837!4d98.611163!16s%2Fg%2F11x07yms7c!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D',
     image: '/events/reception-line.svg',
     imageAlt: 'Ilustrasi garis meja resepsi dengan lampu dan lilin',
     animation: 'sparkle',
@@ -614,6 +688,30 @@ function EventSection() {
                   </address>
                 </div>
                 </div>
+                {event.mapsUrl && (
+                  <a
+                    className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-[#647449] bg-[#647449] px-5 py-3.5 text-[0.62rem] font-bold tracking-[0.2em] text-white uppercase transition-colors duration-300 hover:border-[#4e5b39] hover:bg-[#4e5b39] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#647449]"
+                    href={event.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Lihat lokasi ${event.title} di Google Maps (buka tab baru)`}
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Lihat Lokasi
+                  </a>
+                )}
               </div>
             </motion.article>
           ))}
@@ -934,6 +1032,7 @@ function App() {
     const params = new URLSearchParams(window.location.search)
     return (params.get('guest') || params.get('to') || '').trim().slice(0, 100)
   })()
+  const guestResponses = useGuestResponses({ enabled: opened, guestName })
 
   const playMusic = async () => {
     const audio = audioRef.current
@@ -966,7 +1065,7 @@ function App() {
   useEffect(() => {
     document.documentElement.style.overflow = opened ? '' : 'hidden'
     document.body.style.overflow = opened ? '' : 'hidden'
-    if (opened) window.scrollTo({ top: 0, behavior: 'auto' })
+    if (opened) window.scrollTo({ top: 0, behavior: 'instant' })
     return () => {
       document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
@@ -1064,6 +1163,22 @@ function App() {
           <LoveStoriesSection />
 
           <GallerySection />
+
+          <RsvpSection
+            guestName={guestName}
+            onSubmit={guestResponses.submitRsvp}
+            counts={guestResponses.counts}
+            loading={guestResponses.loading}
+            loadError={guestResponses.loadError}
+          />
+
+          <WishesSection
+            guestName={guestName}
+            onSubmit={guestResponses.submitWish}
+            wishes={guestResponses.wishes}
+            loading={guestResponses.loading}
+            loadError={guestResponses.loadError}
+          />
         </>
       )}
     </main>
