@@ -1118,7 +1118,7 @@ function App() {
         onPause={() => setMusicPlaying(false)}
         onError={() => setMusicAvailable(false)}
       >
-        <source src="/music/everlasting-love-jesse-barrera.mp3" type="audio/mpeg" />
+        <source src="/music/wedding-song.mp3" type="audio/mpeg" />
       </audio>
 
       <AnimatePresence>
