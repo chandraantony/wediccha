@@ -13,11 +13,12 @@ function emptyData() {
  * conflict, so two concurrent submissions cannot overwrite each other.
  *
  * Requires the `BLOB_READ_WRITE_TOKEN` environment variable, which Vercel sets
- * when a Blob store is connected to the project. The store must allow private
- * blobs, because the file holds every RSVP record.
+ * when a Blob store is connected to the project. Access defaults to public; set
+ * `WEDDING_BLOB_ACCESS=private` with a private store to keep records private.
  */
 export function createBlobGuestStore({
   pathname = process.env.WEDDING_BLOB_PATH || 'wedding/guest-responses.json',
+  access = process.env.WEDDING_BLOB_ACCESS || 'public',
   maxAttempts = 5,
   retryDelayMs = 25,
   blob = { get, put },
@@ -41,7 +42,7 @@ export function createBlobGuestStore({
   async function readFile() {
     let result
     try {
-      result = await blob.get(pathname, { access: 'private', useCache: false })
+      result = await blob.get(pathname, { access, useCache: false })
     } catch (error) {
       if (isNotFound(error)) return { data: emptyData(), etag: null }
       throw error
@@ -54,7 +55,7 @@ export function createBlobGuestStore({
 
   async function writeFile(data, etag) {
     const options = {
-      access: 'private',
+      access,
       addRandomSuffix: false,
       contentType: 'application/json',
       cacheControlMaxAge: 60,
