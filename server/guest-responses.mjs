@@ -60,12 +60,22 @@ function validatePayload(payload, kind) {
   return { ...validated, attendance: payload.attendance, guests: payload.guests }
 }
 
-function validateStoredData(data) {
-  if (!data || data.version !== 1 || !Array.isArray(data.rsvps) || !Array.isArray(data.wishes)) {
+export function validateStoredData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || data.version !== 1) {
     throw new Error('Invalid response file')
   }
 
-  for (const [records, kind] of [[data.rsvps, 'rsvp'], [data.wishes, 'wish']]) {
+  // Tolerate a hand-edited file that omits an empty list.
+  const normalized = {
+    version: 1,
+    rsvps: data.rsvps === undefined ? [] : data.rsvps,
+    wishes: data.wishes === undefined ? [] : data.wishes,
+  }
+  if (!Array.isArray(normalized.rsvps) || !Array.isArray(normalized.wishes)) {
+    throw new Error('Invalid response file')
+  }
+
+  for (const [records, kind] of [[normalized.rsvps, 'rsvp'], [normalized.wishes, 'wish']]) {
     const seen = new Set()
     for (const record of records) {
       if (
@@ -82,10 +92,10 @@ function validateStoredData(data) {
       seen.add(validated.id)
     }
   }
-  return data
+  return normalized
 }
 
-function snapshot(data) {
+export function snapshot(data) {
   const counts = { attending: 0, notAttending: 0, guests: 0 }
   for (const rsvp of data.rsvps) {
     if (rsvp.attendance === 'hadir') {
@@ -143,6 +153,31 @@ async function readData(filePath) {
   }
 }
 
+function createFileStore(filePath) {
+  return {
+    async read() {
+      return serialize(filePath, () => readData(filePath))
+    },
+    async submit(kind, payload) {
+      return serialize(filePath, async () => {
+        const data = await readData(filePath)
+        const records = kind === 'rsvp' ? data.rsvps : data.wishes
+        const index = records.findIndex((record) => record.id === payload.id)
+        if (kind === 'wish' && index !== -1) return snapshot(data)
+
+        const record = {
+          ...payload,
+          createdAt: index === -1 ? new Date().toISOString() : records[index].createdAt,
+        }
+        if (index === -1) records.push(record)
+        else records[index] = record
+        await writeData(filePath, data)
+        return snapshot(data)
+      })
+    },
+  }
+}
+
 async function readJsonBody(req) {
   const contentType = req.headers['content-type']?.split(';')[0].trim().toLowerCase()
   if (contentType !== 'application/json') {
@@ -189,9 +224,10 @@ async function readJsonBody(req) {
 }
 
 /** Standard Node/Connect middleware; pass next to continue to Vite or static serving. */
-export function createGuestResponseHandler({ dataDir } = {}) {
+export function createGuestResponseHandler({ dataDir, store: providedStore } = {}) {
   const directory = path.resolve(dataDir || process.env.WEDDING_DATA_DIR || path.join(process.cwd(), 'data'))
   const filePath = path.join(directory, FILE_NAME)
+  const store = providedStore || createFileStore(filePath)
 
   return async function guestResponseHandler(req, res, next) {
     let pathname
@@ -232,28 +268,13 @@ export function createGuestResponseHandler({ dataDir } = {}) {
 
     try {
       if (expectedMethod === 'GET') {
-        const data = await serialize(filePath, () => readData(filePath))
-        sendJson(res, 200, snapshot(data))
+        sendJson(res, 200, snapshot(await store.read()))
         return
       }
 
       const kind = pathname === '/api/rsvps' ? 'rsvp' : 'wish'
       const payload = validatePayload(await readJsonBody(req), kind)
-      const result = await serialize(filePath, async () => {
-        const data = await readData(filePath)
-        const records = kind === 'rsvp' ? data.rsvps : data.wishes
-        const index = records.findIndex((record) => record.id === payload.id)
-        if (kind === 'wish' && index !== -1) return snapshot(data)
-
-        const record = {
-          ...payload,
-          createdAt: index === -1 ? new Date().toISOString() : records[index].createdAt,
-        }
-        if (index === -1) records.push(record)
-        else records[index] = record
-        await writeData(filePath, data)
-        return snapshot(data)
-      })
+      const result = await store.submit(kind, payload)
       sendJson(res, 200, { ok: true, ...result })
     } catch (error) {
       sendJson(res, error instanceof RequestError ? error.status : 500, {
