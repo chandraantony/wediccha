@@ -9,8 +9,6 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173/` (or `http://localhost:5173/`). The preview uses a fixed local address and port, so the page and response API stay on the same server. Restart the development server after changing its configuration. If the response counters report a connection error, stop any older preview and run `npm run dev` from this project directory again.
-
 The development server also serves the response API. Both forms save to the same JSON file and update the attendance counters and guestbook after a successful save. Other guests' responses refresh every 30 seconds while the invitation is visible.
 
 ## Run in production
