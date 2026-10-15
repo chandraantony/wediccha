@@ -277,9 +277,14 @@ export function createGuestResponseHandler({ dataDir, store: providedStore } = {
       const result = await store.submit(kind, payload)
       sendJson(res, 200, { ok: true, ...result })
     } catch (error) {
-      sendJson(res, error instanceof RequestError ? error.status : 500, {
+      // Surface the real cause in Vercel Runtime Logs without leaking it publicly.
+      console.error('[guest-responses]', error)
+      const isRequestError = error instanceof RequestError
+      sendJson(res, isRequestError ? error.status : 500, {
         ok: false,
-        error: error instanceof RequestError ? error.message : 'Data belum tersimpan. Silakan coba kembali.',
+        error: isRequestError ? error.message : 'Data belum tersimpan. Silakan coba kembali.',
+        // Temporary diagnostic: shows why storage failed. Safe to remove later.
+        ...(isRequestError ? {} : { reason: error?.message || String(error) }),
       })
     }
   }
