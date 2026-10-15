@@ -89,9 +89,9 @@ const SECTIONS = [
   { id: 'bride', label: 'Mempelai Wanita' },
   { id: 'venue', label: 'Pemberkatan & Resepsi' },
   { id: 'countdown', label: 'Catat Tanggalnya' },
-  { id: 'wedding-gift', label: 'Wedding Gift' },
   { id: 'love-stories', label: 'Love Stories' },
   { id: 'gallery', label: 'Galeri' },
+  { id: 'wedding-gift', label: 'Wedding Gift' },
   { id: 'rsvp', label: 'Konfirmasi Kehadiran' },
   { id: 'wishes', label: 'Doa dan Ucapan' },
 ]
@@ -345,6 +345,34 @@ const LOVE_STORY_PHOTOS = Object.entries(loveStoryPhotoModules)
     }
   })
 
+const loveStoryMarqueeModules = import.meta.glob('./assets/love-story-marquee/*.jpg', {
+  eager: true,
+  import: 'default',
+})
+
+const LOVE_STORY_MARQUEE_ALTS = {
+  'edited-portrait-01': 'Ice menggandeng lengan Chandra saat berdiri dalam busana adat',
+  'edited-portrait-02': 'Ice dan Chandra berdiri dengan tangan terkatup dalam busana adat',
+  'edited-portrait-03': 'Ice dan Chandra berlutut berdampingan dalam busana adat',
+  'edited-portrait-04': 'Potret dekat Ice menggandeng lengan Chandra dalam busana adat',
+  'edited-portrait-05': 'Ice dan Chandra dalam potret dekat penuh kehangatan',
+  'portrait-01': 'Ice tersenyum di samping Chandra dalam busana adat',
+  'portrait-02': 'Ice dan Chandra bersimpuh dengan tangan terkatup',
+  'portrait-03': 'Ice memegang payung putih di samping Chandra',
+  'portrait-04': 'Ice dan Chandra berpegangan tangan penuh haru',
+}
+
+const LOVE_STORY_MARQUEE_PHOTOS = Object.entries(loveStoryMarqueeModules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([path, src]) => {
+    const name = path.split('/').pop().replace(/\.jpg$/, '')
+    return {
+      src,
+      position: name === 'edited-portrait-05' ? 'center top' : 'center',
+      alt: LOVE_STORY_MARQUEE_ALTS[name] || 'Foto kenangan kami dalam busana adat',
+    }
+  })
+
 function LoveStoriesSection() {
   return (
     <section
@@ -353,20 +381,28 @@ function LoveStoriesSection() {
       aria-labelledby="love-stories-title"
     >
       <div
-        className="pointer-events-none absolute -inset-3 grid grid-flow-dense grid-cols-3 grid-rows-5 gap-1.5 blur-[1.5px] lg:grid-cols-5 lg:grid-rows-3"
+        className="pointer-events-none absolute -inset-3 overflow-hidden blur-[1.5px]"
         aria-hidden="true"
       >
-        {LOVE_STORY_PHOTOS.map((photo) => (
-          <img
-            key={photo.src}
-            className={`h-full min-h-0 w-full min-w-0 object-cover ${photo.wide ? 'col-span-2' : ''}`}
-            src={photo.src}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            style={{ objectPosition: photo.position }}
-          />
-        ))}
+        <div className="grid grid-flow-dense grid-cols-3 gap-1.5 lg:h-full lg:grid-cols-5 lg:grid-rows-3">
+          {[0, 1, 2, 3].flatMap((copy) =>
+            LOVE_STORY_PHOTOS.map((photo) => (
+              <div
+                key={`${copy}-${photo.src}`}
+                className={`relative min-h-0 min-w-0 overflow-hidden ${photo.wide ? 'col-span-2 aspect-[3/2]' : 'aspect-[3/4]'} lg:aspect-auto ${copy > 0 ? 'lg:hidden' : ''}`}
+              >
+                <img
+                  className="absolute inset-0 h-full w-full object-contain lg:object-cover"
+                  src={photo.src}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  style={{ objectPosition: photo.position }}
+                />
+              </div>
+            ))
+          )}
+        </div>
       </div>
       <div
         className="pointer-events-none absolute inset-0 bg-[#f0eee7]/70"
@@ -424,7 +460,7 @@ function LoveStoriesSection() {
         </div>
       </div>
       <div className="relative z-10 -mx-5 mt-14 sm:-mx-8 sm:mt-18 lg:-mx-12" id="love-story-photos">
-        <LoveStoryMarquee photos={LOVE_STORY_PHOTOS} />
+        <LoveStoryMarquee photos={LOVE_STORY_MARQUEE_PHOTOS} />
       </div>
     </section>
   )
@@ -981,11 +1017,11 @@ function Cover({ onOpen, guestName }) {
           }}
         >
           {guestName && (
-            <div className="mb-5 max-w-sm rounded-r-lg border-l border-[#111517]/45 bg-[#f8f7f2]/75 px-4 py-3 text-left shadow-sm backdrop-blur-sm">
-              <p className="text-[0.58rem] font-bold tracking-[0.22em] text-[#111517]/65 uppercase">
+            <div className="mb-4 max-w-[17rem] rounded-r-lg border-l border-[#111517]/45 bg-[#f8f7f2]/75 px-3 py-2 text-left shadow-sm backdrop-blur-sm sm:mb-5 sm:max-w-sm sm:px-4 sm:py-3">
+              <p className="text-[0.52rem] font-bold tracking-[0.16em] text-[#111517]/65 uppercase sm:text-[0.58rem] sm:tracking-[0.22em]">
                 Kepada Yth. Bapak/Ibu/Saudara/i
               </p>
-              <p className="mt-1.5 font-['Tenor_Sans',sans-serif] text-xl leading-snug sm:text-2xl">
+              <p className="mt-1 font-['Tenor_Sans',sans-serif] text-base leading-snug wrap-anywhere sm:mt-1.5 sm:text-2xl">
                 {guestName}
               </p>
             </div>
@@ -1158,11 +1194,11 @@ function App() {
             </motion.div>
           </section>
 
-          <WeddingGiftSection />
-
           <LoveStoriesSection />
 
           <GallerySection />
+
+          <WeddingGiftSection />
 
           <RsvpSection
             guestName={guestName}

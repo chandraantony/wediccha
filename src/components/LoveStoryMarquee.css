@@ -1,6 +1,7 @@
 .love-story-marquee {
   --photo-width: 176px;
   --photo-gap: 6px;
+  --photo-scroll-speed: 54.36;
   width: 100%;
 }
 
@@ -46,7 +47,7 @@
 .love-story-marquee__track {
   display: flex;
   width: max-content;
-  animation: love-story-photo-scroll 50s linear infinite;
+  animation: love-story-photo-scroll var(--marquee-duration, 50s) linear infinite;
   will-change: transform;
 }
 
@@ -92,7 +93,7 @@
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
   }
 }
 
@@ -100,6 +101,7 @@
   .love-story-marquee {
     --photo-width: 224px;
     --photo-gap: 8px;
+    --photo-scroll-speed: 69.28;
   }
 
   .love-story-marquee__controls {
