@@ -475,7 +475,7 @@ const GALLERY_IMAGES = Object.entries(galleryModules)
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([path, src]) => {
     const number = path.match(/gallery-(\d+)/)?.[1] ?? ''
-    const landscape = number === '04' || number === '13'
+    const landscape = ['04', '13', '19', '20', '22'].includes(number)
     return {
       src,
       alt: `Ice dan Chandra — foto galeri ${number}`,
@@ -1001,8 +1001,8 @@ function Cover({ onOpen, guestName }) {
             },
           }}
         >
-          And over all these virtues put on love, which binds them
-          all together in perfect unity — Colossians 3:14
+          Dan di atas semuanya itu: kenakanlah kasih, sebagai pengikat
+          yang mempersatukan dan menyempurnakan. — Kolose 3:14
         </motion.p>
 
         <motion.div
