@@ -10,6 +10,7 @@ function fakeBlob() {
   let content = null
   let version = 0
   return {
+    // `get` mimics a public CDN read whose ETag differs from the storage ETag.
     async get() {
       if (content === null) {
         const error = new Error('not found')
@@ -18,9 +19,18 @@ function fakeBlob() {
       }
       return {
         statusCode: 200,
-        blob: { etag: String(version) },
+        blob: { etag: `cdn-${version}` },
         stream: new Response(content).body,
       }
+    },
+    // `head` returns the storage ETag used by `ifMatch`.
+    async head() {
+      if (content === null) {
+        const error = new Error('not found')
+        error.name = 'BlobNotFoundError'
+        throw error
+      }
+      return { etag: String(version) }
     },
     async put(_pathname, body, options) {
       if (options.allowOverwrite === false && content !== null) {

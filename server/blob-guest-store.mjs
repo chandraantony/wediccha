@@ -1,4 +1,4 @@
-import { BlobNotFoundError, BlobPreconditionFailedError, get, put } from '@vercel/blob'
+import { BlobNotFoundError, BlobPreconditionFailedError, get, head, put } from '@vercel/blob'
 import { snapshot, validateStoredData } from './guest-responses.mjs'
 
 function emptyData() {
@@ -21,7 +21,7 @@ export function createBlobGuestStore({
   access = process.env.WEDDING_BLOB_ACCESS || 'public',
   maxAttempts = 5,
   retryDelayMs = 25,
-  blob = { get, put },
+  blob = { get, head, put },
   isNotFound = (error) => error instanceof BlobNotFoundError,
   isPreconditionFailed = (error) => error instanceof BlobPreconditionFailedError,
 } = {}) {
@@ -40,6 +40,19 @@ export function createBlobGuestStore({
   }
 
   async function readFile() {
+    // The ETag for a conditional write must come from the Blob API (`head`),
+    // not from `get`. For public stores `get` is served through the CDN, whose
+    // ETag header does not match the storage ETag used by `put`'s `ifMatch`,
+    // which makes every read-modify-write fail with "ETag mismatch".
+    let metadata
+    try {
+      metadata = await blob.head(pathname)
+    } catch (error) {
+      if (isNotFound(error)) return { data: emptyData(), etag: null }
+      throw error
+    }
+    if (!metadata) return { data: emptyData(), etag: null }
+
     let result
     try {
       result = await blob.get(pathname, { access, useCache: false })
@@ -50,7 +63,7 @@ export function createBlobGuestStore({
     if (!result || result.statusCode !== 200) return { data: emptyData(), etag: null }
 
     const text = await new Response(result.stream).text()
-    return { data: validateStoredData(JSON.parse(text)), etag: result.blob.etag }
+    return { data: validateStoredData(JSON.parse(text)), etag: metadata.etag }
   }
 
   async function writeFile(data, etag) {
